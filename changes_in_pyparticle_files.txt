@@ -1,0 +1,23 @@
+pyparticles/ogl/draw_particles_ogl.py
+
+line: 222
+self.pset.X[i,2] / self.pset.unit  => 0 # because we are working on 2D not 3D
+
+pyparticles/animation/animation_ogl.py
+
+line 37
+ if sys.platform.startswith("win") :
+    from OpenGL.WGL import *
+
+    =>
+
+# if sys.platform.startswith("win") :
+#    from OpenGL.WGL import *
+
+pyparticles/pset/particles_set.py
+
+line 94
+line 97
+line 100
+
+!= None => is not None
