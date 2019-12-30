@@ -19,6 +19,8 @@ import numpy as np
 import pyparticles.pset.particles_set as ps
 
 import pypar_mds_force as mf
+import pyparticles.forces.damping as da
+import pyparticles.forces.multiple_force as ml
 
 import pyparticles.ode.leapfrog_solver as lps
 
@@ -46,10 +48,10 @@ def mds():
     #set main parameters
     dim = 2
 
-    dt = 3.0*3600.0
-    steps = 100
+    dt = 1
+    steps = 10000
 
-    number_of_points = 50
+    number_of_points = 500
 
     FLOOR = -10
     CEILING = 10
@@ -65,7 +67,7 @@ def mds():
     #get working data set
     vectors = get_distances(number_of_points)
 
-	
+
 	#calculate euclidean distances of points
     #matrix (n_o_p) x (n_o_p)
     distances = np.zeros((number_of_points, number_of_points))
@@ -74,36 +76,46 @@ def mds():
             distances[i][j] = dist.euclidean([vectors[i]], vectors[j])
 
 
-    pset.unit = 0.2
+    pset.unit = 1
     pset.mass_unit = 1
 
     #build main forces in our universe
-    force = mf.MdsForce(pset.size)
-
+    force = mf.MdsForce(pset.size, distances)
+    force.set_masses(pset.M)
     force.update_force(pset)
 
-    solver = lps.LeapfrogSolver( force , pset , dt )
+
+    damp = da.Damping(pset.size, dim=2, Consts=1.0)
+    damp.set_masses(pset.M)
+    damp.update_force(pset)
+
+
+    mult = ml.MultipleForce(pset.size, dim=2)
+    mult.append_force(force)
+    mult.append_force(damp)
+
+
+    solver = lps.LeapfrogSolver(mult, pset , dt )
 
     a = aogl.AnimatedGl()
    # a = anim.AnimatedScatter()
-   
+
     a.trajectory = True
     a.trajectory_step = 1
-        
-    
-    a.xlim = ( FLOOR , CEILING )
-    a.ylim = ( FLOOR , CEILING )
-    a.zlim = ( FLOOR , CEILING )
-    
+
+
+    # a.xlim = ( FLOOR , CEILING )
+    # a.ylim = ( FLOOR , CEILING )
+    # a.zlim = ( FLOOR , CEILING )
+
     a.ode_solver = solver
     a.pset = pset
     a.steps = steps
 
     a.build_animation()
-    
-    a.start()
-    
-    return 
 
-	
+    a.start()
+
+
+
 mds()

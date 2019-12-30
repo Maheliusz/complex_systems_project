@@ -43,7 +43,7 @@ class MdsForce( fr.Force ) :
     :param    m:           a vector containig the masses
     :param    Const:       the gravitational constant
     """
-    def __init__(self , size , dim=2 , m=None , Consts=1.0 ):
+    def __init__(self , size ,dis, dim=2 , m=None , Consts=1.0 ):
         
         self.__dim = dim
         self.__size = size
@@ -53,6 +53,7 @@ class MdsForce( fr.Force ) :
         self.__V = np.zeros( ( size , size ) )
         self.__D = np.zeros( ( size , size ) )
         self.__M = np.zeros( ( size , size ) )
+        self.__DIS = dis
         if m != None :
             self.set_masses( m )
 
@@ -73,11 +74,17 @@ class MdsForce( fr.Force ) :
         """
         Compute the force of the current status of the system and return the accelerations of every particle in a *size by dim* array
         """
+        self.__D[:] = dist.squareform(dist.pdist(p_set.X, 'euclidean'))
 
-        nr_of_points = len(p_set.X)
-        # for i in range(nr_of_points):
-        #     for j in range(i):
-        #
+        self.__Fm[:] = 0.001 * self.__DIS[:] * self.__M[:] / ((self.__D[:]) ** 3.0)
+
+        np.fill_diagonal(self.__Fm, 0.0)
+
+        for i in range(self.__dim):
+            self.__V[:, :] = p_set.X[:, i]
+            self.__V[:, :] = (self.__V[:, :].T - p_set.X[:, i]).T
+
+            self.__A[:, i] = np.sum(self.__Fm * self.__V[:, :], 0)
 
         return self.__A
     
