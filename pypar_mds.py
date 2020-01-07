@@ -35,8 +35,21 @@ def get_distances(points, with_labels=True):
     np.random.seed(1234)
     result = load_digits(n_class=10, return_X_y=True)
     # result = result if with_labels else result[0]
-    return result[0][:points]
+    return result[0][:points], result[1][:points]
 
+
+numberColorDictionary = {
+    0 : [1.0, 0.0, 0.0, 1.0], #red
+    1 : [0.0, 1.0, 0.0, 1.0], #green
+    2 : [0.0, 0.0, 1.0, 1.0], #blue
+    3 : [ 31.0 / 256.0, 170.0 / 256.0, 178.0 / 256.0, 1.0], #light blue
+    4 : [ 237.0 / 256.0, 221.0 / 256.0, 38.0 / 256.0, 1.0], #yellow
+    5 : [ 248.0 / 256.0, 27.0 / 256.0, 171.0 / 256.0, 1.0], #pink
+    6 : [ 248.0 / 256.0, 134.0 / 256.0, 27.0 / 256.0, 1.0], #orange
+    7 : [ 83.0 / 256.0, 27.0 / 256.0, 248.0 / 256.0, 1.0], #purple
+    8 : [1.0, 1.0, 1.0, 1.0], # white
+    9 : [ 253.0 / 256.0, 196.0 / 256.0, 181.0 / 256.0, 1.0] #creme
+}
 
 def mds():
     np.random.seed(1234)
@@ -56,16 +69,25 @@ def mds():
     FLOOR = -10
     CEILING = 10
 
-    pset = ps.ParticlesSet(number_of_points, dim , mass=True )
+
+    #get working data set and numbers
+    vectors, numbers = get_distances(number_of_points)
+
+    pset = ps.ParticlesSet(number_of_points, dim , mass=True, color=True)
+
+    for i in range(number_of_points):
+        color = numberColorDictionary[numbers[i]]
+        if i % 2 == 0:
+            pset.color[i][0] = color[0]
+            pset.color[i][1] = color[1]
+            pset.color[i][2] = color[2]
+            pset.color[i][3] = color[3]
 
     #point in initial random positions
     pset.X[:] = np.random.rand(number_of_points, dim)
 
     #all points with same mass
     pset.M[:] = np.ones((number_of_points, 1))
-
-    #get working data set
-    vectors = get_distances(number_of_points)
 
 
 	#calculate euclidean distances of points
